@@ -21,15 +21,20 @@
         /* --- Sidebar & Search --- */
         .sidebar { 
             width: 280px; background: var(--sidebar); display: flex; flex-direction: column; 
-            padding: 16px; transition: transform 0.3s ease; z-index: 1000;
+            padding: 12px; transition: transform 0.3s ease; z-index: 1000;
         }
+        
+        /* Tightened spacing for the one-after-one look */
         .search-bar {
             width: 100%; background: #202123; border: 1px solid #333;
-            border-radius: 12px; padding: 10px 15px; color: white; outline: none; font-size: 14px; margin: 15px 0;
+            border-radius: 8px; padding: 10px 15px; color: white; outline: none; font-size: 14px; 
+            margin-bottom: 8px; /* Stacked right above new chat */
         }
+
         .nav-item { 
-            display: flex; align-items: center; gap: 12px; padding: 12px 16px; 
-            border-radius: 25px; cursor: pointer; font-size: 14px; color: var(--text-gray);
+            display: flex; align-items: center; gap: 12px; padding: 10px 16px; 
+            border-radius: 8px; cursor: pointer; font-size: 14px; color: var(--text-gray);
+            margin-bottom: 2px;
         }
         .nav-item:hover { background: var(--hover); color: white; }
 
@@ -64,14 +69,15 @@
 <body>
 
     <div class="sidebar" id="sidebar">
-        <div class="nav-item" onclick="createNewChat()" style="background: #28292a; color: white; justify-content: center;">
+        <input type="text" class="search-bar" id="historySearch" placeholder="Search chats..." oninput="filterHistory()">
+        
+        <div class="nav-item" onclick="createNewChat()" style="background: #28292a; color: white; justify-content: center; margin-bottom: 10px;">
             <span>+</span> New Chat
         </div>
-        <input type="text" class="search-bar" placeholder="Search chats...">
+        
         <div style="font-size: 11px; color: #555; margin: 10px 15px; text-transform: uppercase;">History</div>
         <div id="history">
-            <div class="nav-item" style="color: var(--accent); font-weight: bold; background: rgba(66,133,244,0.05);">Frontend vs Backend AI</div>
-        </div>
+            </div>
     </div>
 
     <div class="main">
@@ -100,18 +106,27 @@
     <script>
         function toggleMenu() { document.getElementById('sidebar').classList.toggle('open'); }
 
+        // Function to filter history items based on search
+        function filterHistory() {
+            const val = document.getElementById('historySearch').value.toLowerCase();
+            const items = document.querySelectorAll('#history .nav-item');
+            items.forEach(item => {
+                const text = item.innerText.toLowerCase();
+                item.style.display = text.includes(val) ? "flex" : "none";
+            });
+        }
+
         function createNewChat() {
             const chat = document.getElementById('chat');
             const history = document.getElementById('history');
             
-            // If there's a user message, add a snippet to history
             const messages = chat.querySelectorAll('.user-msg-text');
             if (messages.length > 0) {
                 const snippet = messages[0].innerText.substring(0, 20) + "...";
+                // Added as a new item in the history list
                 history.innerHTML = `<div class="nav-item">${snippet}</div>` + history.innerHTML;
             }
 
-            // Reset Chat View
             chat.innerHTML = `
                 <div style="margin-top: 15vh;" id="welcome">
                     <h1 style="font-size: 56px; background: linear-gradient(to right, #4285f4, #a855f7); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">Hello, User</h1>
