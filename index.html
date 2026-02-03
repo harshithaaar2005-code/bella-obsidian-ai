@@ -1,47 +1,144 @@
-<div class="sidebar" id="sidebar">
-    <div style="display: flex; justify-content: space-between; align-items: center; padding: 10px 16px; margin-bottom: 20px;">
-        <div class="menu-toggle" onclick="toggleMenu()" style="position: static; font-size: 20px;">☰</div>
-        <div style="cursor: pointer; font-size: 18px; color: var(--text-gray);">🔍</div>
-    </div>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <title>Bella AI</title>
+    <style>
+        :root {
+            --bg: #0e0e0e;
+            --sidebar: #131314;
+            --hover: #1e1f20;
+            --text-main: #e3e3e3;
+            --text-gray: #c4c7c5;
+            --accent: #4285f4;
+        }
 
-    <div id="sidebar-list">
-        <div class="nav-item" onclick="createNewChat()">
-            <span style="font-size: 18px;">📝</span>
-            <span>New chat</span>
-        </div>
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Google Sans', sans-serif; }
+        body { background: var(--bg); color: var(--text-main); display: flex; height: 100vh; overflow: hidden; }
 
-        <div class="nav-item">
-            <span style="font-size: 18px;">⭐</span>
-            <span>My stuff</span>
-        </div>
+        /* --- Sidebar --- */
+        .sidebar { width: 280px; background: var(--sidebar); display: flex; flex-direction: column; padding: 8px; transition: 0.3s; z-index: 1000; }
+        .sidebar-header { display: flex; justify-content: space-between; align-items: center; padding: 12px 16px; }
+        
+        /* Search Input (Hidden until search clicked or just visible) */
+        #searchBox { width: 90%; margin: 5px auto; background: #202123; border: 1px solid #333; color: white; padding: 8px; border-radius: 8px; display: none; }
 
-        <div class="nav-item" style="justify-content: space-between; margin-top: 20px;">
-            <span style="font-weight: 500; color: white;">Gems</span>
-            <span>›</span>
+        .nav-item { display: flex; align-items: center; gap: 12px; padding: 10px 16px; border-radius: 8px; cursor: pointer; font-size: 14px; transition: 0.1s; }
+        .nav-item:hover { background: var(--hover); }
+
+        /* --- Main --- */
+        .main { flex: 1; display: flex; flex-direction: column; position: relative; }
+        #chat { flex: 1; overflow-y: auto; padding: 20px 15%; display: flex; flex-direction: column; gap: 20px; padding-bottom: 150px; }
+        
+        /* --- Input --- */
+        .input-container { padding: 20px 15%; width: 100%; position: absolute; bottom: 0; background: linear-gradient(transparent, var(--bg) 60%); }
+        .pill { background: #1e1f20; border-radius: 32px; display: flex; align-items: center; padding: 8px 16px; border: 1px solid #333; }
+        input[type="text"] { flex: 1; background: transparent; border: none; color: white; outline: none; padding: 12px; font-size: 16px; }
+        .send-arrow { color: var(--accent); font-size: 26px; cursor: pointer; }
+
+        @media (max-width: 800px) { .sidebar { position: fixed; left: -280px; height: 100%; } .sidebar.open { left: 0; } #chat { padding: 20px 5% 150px 5%; } }
+    </style>
+</head>
+<body>
+
+    <div class="sidebar" id="sidebar">
+        <div class="sidebar-header">
+            <div onclick="toggleMenu()" style="cursor:pointer;">☰</div>
+            <div style="cursor: pointer;" onclick="toggleSearch()">🔍</div>
         </div>
         
-        <div style="font-size: 11px; color: #555; margin: 20px 16px 5px 16px; text-transform: uppercase;">Recent</div>
-        <div id="history">
-            <div class="nav-item history-item">Frontend vs Backend AI</div>
+        <input type="text" id="searchBox" placeholder="Search chats..." oninput="doSearch()">
+
+        <div class="nav-item" onclick="createNewChat()">
+            <span>📝</span><span>New chat</span>
+        </div>
+        <div class="nav-item"><span>⭐</span><span>My stuff</span></div>
+        <div class="nav-item" style="justify-content: space-between; margin-top: 8px;">
+            <span>Gems</span><span>›</span>
+        </div>
+
+        <div style="font-size: 11px; color: #555; margin: 20px 16px 8px 16px; text-transform: uppercase;">Recent</div>
+        <div id="historyList">
+            </div>
+    </div>
+
+    <div class="main">
+        <div class="header" style="text-align:center; padding: 15px;">
+            <div class="logo-container" style="font-weight:600; letter-spacing:2px;">BELLA 2.5</div>
+        </div>
+
+        <div id="chat">
+            <div style="margin-top: 15vh;" id="welcome">
+                <h1 style="font-size: 56px; background: linear-gradient(to right, #4285f4, #a855f7); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">Hello, User</h1>
+                <h2 style="font-size: 56px; color: #444746;">How can I help?</h2>
+            </div>
+        </div>
+
+        <div class="input-container">
+            <div class="pill">
+                <input type="text" id="userInput" placeholder="Ask Bella..." onkeypress="if(event.key==='Enter') askBella()">
+                <div class="send-arrow" onclick="askBella()">➤</div>
+            </div>
         </div>
     </div>
-</div>
 
-<style>
-    /* This makes them tight and "one after one" */
-    .nav-item {
-        display: flex;
-        align-items: center;
-        gap: 15px;
-        padding: 10px 16px; /* Tight padding like the photo */
-        border-radius: 8px; /* Slightly more square like the photo */
-        cursor: pointer;
-        font-size: 14px;
-        color: var(--text-main);
-        transition: 0.1s;
-    }
-    
-    .nav-item:hover {
-        background: var(--hover);
-    }
-</style>
+    <script>
+        let chatHistory = []; 
+
+        function toggleMenu() { document.getElementById('sidebar').classList.toggle('open'); }
+        function toggleSearch() { 
+            const s = document.getElementById('searchBox');
+            s.style.display = (s.style.display === 'none' || s.style.display === '') ? 'block' : 'none';
+        }
+
+        function doSearch() {
+            const term = document.getElementById('searchBox').value.toLowerCase();
+            const items = document.querySelectorAll('.history-item');
+            items.forEach(item => {
+                item.style.display = item.innerText.toLowerCase().includes(term) ? 'flex' : 'none';
+            });
+        }
+
+        function createNewChat() {
+            const chatDiv = document.getElementById('chat');
+            const firstMsg = chatDiv.querySelector('.user-msg');
+            
+            if (firstMsg) {
+                const text = firstMsg.innerText;
+                const historyList = document.getElementById('historyList');
+                const newItem = document.createElement('div');
+                newItem.className = 'nav-item history-item';
+                newItem.innerHTML = `<span>💬</span><span>${text.substring(0, 20)}...</span>`;
+                // Add click event to "reload" (simulated)
+                newItem.onclick = () => alert("Reloading: " + text);
+                historyList.prepend(newItem);
+            }
+
+            chatDiv.innerHTML = `<div style="margin-top: 15vh;" id="welcome">
+                <h1 style="font-size: 56px; background: linear-gradient(to right, #4285f4, #a855f7); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">Hello, User</h1>
+                <h2 style="font-size: 56px; color: #444746;">How can I help?</h2>
+            </div>`;
+        }
+
+        async function askBella() {
+            const input = document.getElementById('userInput');
+            const chat = document.getElementById('chat');
+            if (!input.value) return;
+
+            if (document.getElementById('welcome')) document.getElementById('welcome').remove();
+
+            chat.innerHTML += `<div class="msg-row"><b>You</b><br><span class="user-msg">${input.value}</span></div>`;
+            const val = input.value;
+            input.value = '';
+
+            // Simulate AI response
+            setTimeout(() => {
+                chat.innerHTML += `<div class="msg-row"><span style="color:#a855f7">✦</span> Bella: I am processing "${val}"</div>`;
+                chat.scrollTop = chat.scrollHeight;
+            }, 1000);
+        }
+    </script>
+</body>
+</html>
